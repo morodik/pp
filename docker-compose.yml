@@ -1,0 +1,46 @@
+services:
+
+  frontend:
+    build:
+      context: ../ai-docs-frontend
+      dockerfile: Dockerfile
+    ports:
+      - "3000:80"  # localhost:3000 → nginx:80
+    depends_on:
+      - backend
+    networks:
+      - app-network
+    environment:
+      - VITE_API_BASE=http://backend:8080
+
+  backend:
+    build:
+      dockerfile: Dockerfile
+    ports:
+      - "8080:8080"
+    env_file:
+      - .env
+    depends_on:
+      - postgres
+    networks:
+      - app-network
+
+  postgres:
+    image: postgres:15-alpine
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: secret123
+      POSTGRES_DB: aidocs
+    volumes:
+      - postgres-data:/var/lib/postgresql/data
+    ports:
+      - "5434:5432"
+    networks:
+      - app-network
+
+volumes:
+  postgres-data:
+
+networks:
+  app-network:
+    driver: bridge
